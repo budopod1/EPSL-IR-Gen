@@ -1,0 +1,232 @@
+IRStructDef {
+    Str:name,
+    Bool:is_opaque,
+    IRStructType?:struct
+}
+
+Str#<IRStructDef:struct_def>.stringify {
+    if (struct_def.is_opaque) {
+        return "%{} = type opaque" % struct_def.name;
+    } else {
+        Str:type_str = [[struct_def.struct].unwrap].stringify;
+        return "%{} = type {}" % struct_def.name % type_str;
+    };
+}
+
+IRIntConstant {
+    W:val
+}
+
+IRFloatConstant {
+    Q:val
+}
+
+IRNullConstant {}
+
+IRConstant {
+    IRType:type,
+    IRIntConstant?:int,
+    IRFloatConstant?:float,
+    IRNullConstant?:null_
+}
+
+Str#<IRConstant:const>.stringify {
+    if (![const.int].is_null) {
+        return [[const.int].unwrap.val].stringify;
+    } elif (![const.float].is_null) {
+        return [[const.float].unwrap.val].stringify;
+    } elif (![const.null_].is_null) {
+        return "null";
+    } else {
+        abort "Invalid IR constant";
+    };
+}
+
+IRRegister {
+    Str:name,
+    IRType:type
+}
+
+IRValuedInstruction {
+    IRRegister:register
+}
+
+IRRetVoidInstruction {}
+
+IRRetInstruction {
+    IRValue:returned
+}
+
+IRInstruction {
+    IRValuedInstruction?:valued,
+    IRRetVoidInstruction?:ret_void,
+    IRRetInstruction?:ret,
+}
+
+Str#<IRInstruction:instruction>.stringify {
+    abort "Nope";
+}
+
+IRValue {
+    IRRegister?:register,
+    IRConstant?:constant
+}
+
+IRBasicBlock {
+    W:id,
+    [IRInstruction]:instructions
+}
+
+Str#<IRBasicBlock:basic_block>.stringify {
+    Str:result = "b{}:\n" % basic_block.id;
+    for (IRInstruction:instruction in basic_block.instructions) {
+        [result].extend[[instruction].stringify];
+        [result].append['\n'];
+    };
+    return result;
+}
+
+IRFuncBody {
+    [IRBasicBlock]:blocks
+}
+
+Str#<IRFuncBody:func_body>.stringify {
+    Str:blocks_stringified = "";
+    for (IRBasicBlock:block in func_body.blocks) {
+        [blocks_stringified].extend[[block].stringify];
+    };
+    return "{\n{}}" % blocks_stringified;
+}
+
+IRFunc {
+    IRType:ret_type,
+    Str:name,
+    [IRRegister]:args,
+    IRFuncBody?:body
+}
+
+Str#<IRFunc:func>.stringify {
+    Str:stringified_args = "";
+    for (W:i enumerating func.args) {
+        if (i > 0) {
+            [stringified_args].extend[", "];
+        };
+        [stringified_args].extend[[func.args[i]].stringify];
+    };
+    Str:result = "declare {} @{}({})" % [func.ret_type].stringify 
+        % func.name % stringified_args;
+    if (![func.body].is_null) {
+        [result].extend[[[func.body].unwrap].stringify];
+    };
+    [result].extend["\n\n"];
+    return result;
+}
+
+IRModule {
+    Str:target_triple,
+    Str:target_datalayout,
+    Str:source_filename,
+    [IRStructDef]:struct_defs,
+    [IRFunc]:funcs
+}
+
+Str#<IRModule:module>.stringify {
+    Str:struct_defs_stringified = "";
+    for (IRStructDef:struct_def in module.struct_defs) {
+        [struct_defs_stringified].extend[[struct_def].stringify];
+        [struct_defs_stringified].append['\n'];
+    };
+    Str:funcs_stringified = "";
+    for (IRFunc:func in module.funcs) {
+        [funcs_stringified].extend[[func].stringify];
+        [funcs_stringified].extend["\n\n"];
+    };
+    return "target triple = \"{}\"
+target datalayout = \"{}\"
+source_filename = \"{}\"
+
+{}
+
+{}" % module.target_triple % module.target_datalayout % module.source_filename
+        % struct_defs_stringified % funcs_stringified;
+}
+
+IRPtrType {}
+
+IRIntType {
+    W:bits
+}
+
+IRFloatType {
+    W:bits // acceptable values are 16, 32, 64, and 128
+}
+
+IRVoidType {}
+
+IRArrayType {
+    W:elem_count,
+    IRType:elem_type
+}
+
+IRStructType {
+    [IRType]:members
+}
+
+IRIdentifiedStructType {
+    Str:name
+}
+
+IRType {
+    IRPtrType?:ptr,
+    IRIntType?:int,
+    IRFloatType?:float,
+    IRVoidType?:void,
+    IRArrayType?:array,
+    IRStructType?:literal_struct,
+    IRIdentifiedStructType?:identified_struct,
+}
+
+Str#<IRType:type>.stringify {
+    if (![type.ptr].is_null) {
+        return "ptr";
+    } elif (![type.int].is_null) {
+        return "i{}" % [type.int].unwrap.bits;
+    } elif (![type.float].is_null) {
+        W:bits = [type.float].unwrap.bits;
+        switch (bits)
+            (16) {
+                return "half";
+            }
+            (32) {
+                return "float";
+            }
+            (64) {
+                return "double";
+            }
+            (128) {
+                return "fp128";
+            }
+            {
+                abort "{} is not a valid number of bits for a float" % bits;
+            };
+    } elif (![type.void].is_null) {
+        return "void";
+    } elif (![type.array].is_null) {
+        IRArrayType:arr = [type.array].unwrap;
+        return "[{} x {}]" % arr.elem_count % [arr.elem_type].stringify;
+    } elif (![type.literal_struct].is_null) {
+        Str:inner = "";
+        [IRType]:members = [type.literal_struct].unwrap.members;
+        for (W:i enumerating members) {
+            if (i > 0) {
+                [inner].extend[", "];
+            };
+            [inner].extend[[members[i]].stringify];
+        };
+        return "{{}}" % inner;
+    } elif (![type.identified_struct].is_null) {
+        return "%{}" % [type.identified_struct].unwrap.name;
+    } else {
+        abort "Invalid IR type";
+    };
+}
