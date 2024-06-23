@@ -131,6 +131,7 @@ IRBasicBlock {
 Str#<IRBasicBlock:basic_block>.stringify {
     Str:result = "b{}:\n" % basic_block.id;
     for (IRInstruction:instruction in basic_block.instructions) {
+        [result].extend["  "];
         [result].extend[[instruction].stringify];
         [result].append['\n'];
     };
