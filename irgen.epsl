@@ -47,8 +47,30 @@ IRRegister {
     IRType:type
 }
 
+Str#<IRRegister:register>.stringify {
+    return ["%"] + [register.name];
+}
+
+IRAdditionInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
 IRValuedInstruction {
-    IRRegister:register
+    IRRegister:register,
+    IRAdditionInstruction?:addition
+}
+
+Str#<IRValuedInstruction:instruction>.stringify {
+    Str?:val = null;
+    Str:type_str = [instruction.register.type].stringify;
+    if (instruction.addition) {
+        IRAdditionInstruction:addition = [instruction.addition].unwrap;
+        val = "add {} {}, {}" % type_str % [addition.v1].stringify % [addition.v2].stringify;
+    } else {
+        abort "Invalid IRValuedInstruction";
+    };
+    return "{} = {}" % [instruction.register].stringify % [val].unwrap;
 }
 
 IRRetVoidInstruction {}
@@ -64,12 +86,41 @@ IRInstruction {
 }
 
 Str#<IRInstruction:instruction>.stringify {
-    abort "Nope";
+    if (instruction.valued) {
+        return [[instruction.valued].unwrap].stringify;
+    } elif (instruction.ret_void) {
+        return "ret void";
+    } elif (instruction.ret) {
+        IRValue:returned = [instruction.ret].unwrap.returned;
+        return "ret {} {}" % [[returned].type].stringify % [returned].stringify;
+    } else {
+        abort "Invalid IRInstruction";
+    };
 }
 
 IRValue {
     IRRegister?:register,
     IRConstant?:constant
+}
+
+IRType#<IRValue:val>.type {
+    if (val.register) {
+        return [val.register].unwrap.type;
+    } elif (val.constant) {
+        return [val.constant].unwrap.type;
+    } else {
+        abort "Invalid IRValue";
+    };
+}
+
+Str#<IRValue:val>.stringify {
+    if (val.register) {
+        return [[val.register].unwrap].stringify;
+    } elif (val.constant) {
+        return [[val.constant].unwrap].stringify;
+    } else {
+        abort "Invalid IRValue";
+    };
 }
 
 IRBasicBlock {
@@ -87,7 +138,8 @@ Str#<IRBasicBlock:basic_block>.stringify {
 }
 
 IRFuncBody {
-    [IRBasicBlock]:blocks
+    [IRBasicBlock]:blocks,
+    W:register_id_counter
 }
 
 Str#<IRFuncBody:func_body>.stringify {
