@@ -247,21 +247,21 @@ Str#<IRType:type>.stringify {
     } elif (![type.float].is_null) {
         W:bits = [type.float].unwrap.bits;
         switch (bits)
-            (16) {
-                return "half";
-            }
-            (32) {
-                return "float";
-            }
-            (64) {
-                return "double";
-            }
-            (128) {
-                return "fp128";
-            }
-            {
-                abort "{} is not a valid number of bits for a float" % bits;
-            };
+        (16) {
+            return "half";
+        }
+        (32) {
+            return "float";
+        }
+        (64) {
+            return "double";
+        }
+        (128) {
+            return "fp128";
+        }
+        {
+            abort "{} is not a valid number of bits for a float" % bits;
+        };
     } elif (![type.void].is_null) {
         return "void";
     } elif (![type.array].is_null) {
