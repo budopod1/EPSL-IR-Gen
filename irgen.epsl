@@ -166,7 +166,7 @@ Str#<IRFunc:func>.stringify {
         };
         [stringified_args].extend[[func.args[i]].stringify];
     };
-    Str:result = "declare {} @{}({})" % [func.ret_type].stringify 
+    Str:result = "declare {} @{}({})" % [func.ret_type].stringify
         % func.name % stringified_args;
     if (![func.body].is_null) {
         [result].extend[[[func.body].unwrap].stringify];
