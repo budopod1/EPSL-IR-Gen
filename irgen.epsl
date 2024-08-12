@@ -31,11 +31,11 @@ IRConstant {
 }
 
 Str#<IRConstant:const>.stringify {
-    if (![const.int].is_null) {
+    if (const.int) {
         return [[const.int].unwrap.val].stringify;
-    } elif (![const.float].is_null) {
+    } elif (const.float) {
         return [[const.float].unwrap.val].stringify;
-    } elif (![const.null_].is_null) {
+    } elif (const.null_) {
         return "null";
     } else {
         abort "Invalid IR constant";
@@ -51,22 +51,432 @@ Str#<IRRegister:register>.stringify {
     return ["%"] + [register.name];
 }
 
+IRFloatNegationInstruction {
+    IRValue:v
+}
+
 IRAdditionInstruction {
     IRValue:v1,
     IRValue:v2
 }
 
+IRFloatAdditionInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRSubtractionInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRFloatSubtractionInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRMultiplicationInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRFloatMultiplicationInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRUnsignedDivisionInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRSignedDivisionInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRFloatDivisionInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRUnsignedModuloInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRSignedModuloInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRFloatModuloInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRLeftShiftInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRUnsignedRightShiftInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRSignedRightShiftInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRANDInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRORInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRXORInstruction {
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRExtractValueInstruction {
+    IRValue:aggregate,
+    [W]:indices
+}
+
+IRInsertValueInstruction {
+    IRValue:aggregate,
+    IRValue:elem,
+    [W]:indices
+}
+
+IRAllocaInstruction {
+    IRType:type
+}
+
+IRAllocaMultipleInstruction {
+    IRType:type,
+    IRValue:count
+}
+
+IRLoadInstruction {
+    IRValue:ptr
+}
+
+IRGEPInstruction {
+    IRType:base_type,
+    IRValue:ptr,
+    [IRValue]:indices
+}
+
+IRTruncateInstruction {
+    IRValue:v
+}
+
+IRUnsignedExtendInstruction {
+    IRValue:v
+}
+
+IRSignedExtendInstruction {
+    IRValue:v
+}
+
+IRFloatTruncateInstruction {
+    IRValue:v
+}
+
+IRFloatExtendInstruction {
+    IRValue:v
+}
+
+IRFloatToUnsignedInstruction {
+    IRValue:v
+}
+
+IRFloatToSignedInstruction {
+    IRValue:v
+}
+
+IRUnsignedToFloatInstruction {
+    IRValue:v
+}
+
+IRSignedToFloatInstruction {
+    IRValue:v
+}
+
+IRPtrToIntInstruction {
+    IRValue:v
+}
+
+IRIntToPtrInstruction {
+    IRValue:v
+}
+
+IRIntCompareInstruction {
+    Str:comp,
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRFloatCompareInstruction {
+    Str:comp,
+    IRValue:v1,
+    IRValue:v2
+}
+
+IRPHIInstruction {
+    [IRValue]:vals,
+    [W]:block_ids
+}
+
+IRSelectInstruction {
+    IRValue:cond,
+    IRValue:if_true,
+    IRValue:if_false
+}
+
+IRCallInstruction {
+    Str:name,
+    [IRValue]:args,
+    W:varg_count
+}
+
+Str#<IRCallInstruction:call>.stringify with ret <Str:ret> {
+    Str:sig = ret;
+
+    if (call.varg_count) {
+        Str:arg_type_txt = "";
+        for (IRValue:arg in call.args to [call.args].len - call.varg_count) {
+            [arg_type_txt].extend[[[arg].type].stringify];
+            [arg_type_txt].extend[", "];
+        };
+        sig = "{} ({}...)" % ret % arg_type_txt;
+    };
+
+    Str:arg_txt = "";
+    for (IRValue:arg in call.args) {
+        Str:frmt = "{} {}";
+        if (arg_txt) {
+            frmt = ", {} {}";
+        };
+        [arg_txt].extend[frmt % [[arg].type].stringify % [arg].stringify];
+    };
+
+    return "call {} @{}({})" % sig % call.name % arg_txt;
+}
+
 IRValuedInstruction {
     IRRegister:register,
-    IRAdditionInstruction?:addition
+    IRFloatNegationInstruction?:float_negation,
+    IRAdditionInstruction?:addition,
+    IRFloatAdditionInstruction?:float_addition,
+    IRSubtractionInstruction?:subtraction,
+    IRFloatSubtractionInstruction?:float_subtraction,
+    IRMultiplicationInstruction?:multiplication,
+    IRFloatMultiplicationInstruction?:float_multiplication,
+    IRUnsignedDivisionInstruction?:unsigned_division,
+    IRSignedDivisionInstruction?:signed_division,
+    IRFloatDivisionInstruction?:float_division,
+    IRUnsignedModuloInstruction?:unsigned_modulo,
+    IRSignedModuloInstruction?:signed_modulo,
+    IRFloatModuloInstruction?:float_modulo,
+    IRLeftShiftInstruction?:left_shift,
+    IRUnsignedRightShiftInstruction?:unsigned_right_shift,
+    IRSignedRightShiftInstruction?:signed_right_shift,
+    IRANDInstruction?:AND,
+    IRORInstruction?:OR,
+    IRXORInstruction?:XOR,
+    IRExtractValueInstruction?:extract_value,
+    IRInsertValueInstruction?:insert_value,
+    IRAllocaInstruction?:alloca,
+    IRAllocaMultipleInstruction?:alloca_multiple,
+    IRLoadInstruction?:load,
+    IRGEPInstruction?:GEP,
+    IRTruncateInstruction?:truncate,
+    IRUnsignedExtendInstruction?:unsigned_extend,
+    IRSignedExtendInstruction?:signed_extend,
+    IRFloatTruncateInstruction?:float_truncate,
+    IRFloatExtendInstruction?:float_extend,
+    IRFloatToUnsignedInstruction?:float_to_unsigned,
+    IRFloatToSignedInstruction?:float_to_signed,
+    IRUnsignedToFloatInstruction?:unsigned_to_float,
+    IRSignedToFloatInstruction?:signed_to_float,
+    IRPtrToIntInstruction?:ptr_to_int,
+    IRIntToPtrInstruction?:int_to_ptr,
+    IRIntCompareInstruction?:int_compare,
+    IRFloatCompareInstruction?:float_compare,
+    IRPHIInstruction?:PHI,
+    IRSelectInstruction?:select,
+    IRCallInstruction?:call
 }
 
 Str#<IRValuedInstruction:instruction>.stringify {
     Str?:val = null;
     Str:type_str = [instruction.register.type].stringify;
-    if (instruction.addition) {
+    if (instruction.float_negation) {
+        IRFloatNegationInstruction:float_negation = [instruction.float_negation].unwrap;
+        val = "fneg {} {}" % type_str % [float_negation.v].stringify;
+    } elif (instruction.addition) {
         IRAdditionInstruction:addition = [instruction.addition].unwrap;
         val = "add {} {}, {}" % type_str % [addition.v1].stringify % [addition.v2].stringify;
+    } elif (instruction.float_addition) {
+        IRFloatAdditionInstruction:float_addition = [instruction.float_addition].unwrap;
+        val = "fadd {} {}, {}" % type_str % [float_addition.v1].stringify % [float_addition.v2].stringify;
+    } elif (instruction.subtraction) {
+        IRSubtractionInstruction:subtraction = [instruction.subtraction].unwrap;
+        val = "sub {} {}, {}" % type_str % [subtraction.v1].stringify % [subtraction.v2].stringify;
+    } elif (instruction.float_subtraction) {
+        IRFloatSubtractionInstruction:float_subtraction = [instruction.float_subtraction].unwrap;
+        val = "fsub {} {}, {}" % type_str % [float_subtraction.v1].stringify % [float_subtraction.v2].stringify;
+    } elif (instruction.multiplication) {
+        IRMultiplicationInstruction:multiplication = [instruction.multiplication].unwrap;
+        val = "mul {} {}, {}" % type_str % [multiplication.v1].stringify % [multiplication.v2].stringify;
+    } elif (instruction.float_multiplication) {
+        IRFloatMultiplicationInstruction:float_multiplication = [instruction.float_multiplication].unwrap;
+        val = "fmul {} {}, {}" % type_str % [float_multiplication.v1].stringify % [float_multiplication.v2].stringify;
+    } elif (instruction.unsigned_division) {
+        IRUnsignedDivisionInstruction:unsigned_division = [instruction.unsigned_division].unwrap;
+        val = "udiv {} {}, {}" % type_str % [unsigned_division.v1].stringify % [unsigned_division.v2].stringify;
+    } elif (instruction.signed_division) {
+        IRSignedDivisionInstruction:signed_division = [instruction.signed_division].unwrap;
+        val = "sdiv {} {}, {}" % type_str % [signed_division.v1].stringify % [signed_division.v2].stringify;
+    } elif (instruction.float_division) {
+        IRFloatDivisionInstruction:float_division = [instruction.float_division].unwrap;
+        val = "fdiv {} {}, {}" % type_str % [float_division.v1].stringify % [float_division.v2].stringify;
+    } elif (instruction.unsigned_modulo) {
+        IRUnsignedModuloInstruction:unsigned_modulo = [instruction.unsigned_modulo].unwrap;
+        val = "umod {} {}, {}" % type_str % [unsigned_modulo.v1].stringify % [unsigned_modulo.v2].stringify;
+    } elif (instruction.signed_modulo) {
+        IRSignedModuloInstruction:signed_modulo = [instruction.signed_modulo].unwrap;
+        val = "smod {} {}, {}" % type_str % [signed_modulo.v1].stringify % [signed_modulo.v2].stringify;
+    } elif (instruction.float_modulo) {
+        IRFloatModuloInstruction:float_modulo = [instruction.float_modulo].unwrap;
+        val = "fmod {} {}, {}" % type_str % [float_modulo.v1].stringify % [float_modulo.v2].stringify;
+    } elif (instruction.left_shift) {
+        IRLeftShiftInstruction:left_shift = [instruction.left_shift].unwrap;
+        val = "shl {} {}, {}" % type_str % [left_shift.v1].stringify % [left_shift.v2].stringify;
+    } elif (instruction.unsigned_right_shift) {
+        IRUnsignedRightShiftInstruction:unsigned_right_shift = [instruction.unsigned_right_shift].unwrap;
+        val = "lshr {} {}, {}" % type_str % [unsigned_right_shift.v1].stringify % [unsigned_right_shift.v2].stringify;
+    } elif (instruction.signed_right_shift) {
+        IRSignedRightShiftInstruction:signed_right_shift = [instruction.signed_right_shift].unwrap;
+        val = "ashr {} {}, {}" % type_str % [signed_right_shift.v1].stringify % [signed_right_shift.v2].stringify;
+    } elif (instruction.AND) {
+        IRANDInstruction:AND = [instruction.AND].unwrap;
+        val = "and {} {}, {}" % type_str % [AND.v1].stringify % [AND.v2].stringify;
+    } elif (instruction.OR) {
+        IRORInstruction:OR = [instruction.OR].unwrap;
+        val = "or {} {}, {}" % type_str % [OR.v1].stringify % [OR.v2].stringify;
+    } elif (instruction.XOR) {
+        IRXORInstruction:XOR = [instruction.XOR].unwrap;
+        val = "xor {} {}, {}" % type_str % [XOR.v1].stringify % [XOR.v2].stringify;
+    } elif (instruction.extract_value) {
+        IRExtractValueInstruction:extract_value = [instruction.extract_value].unwrap;
+        Str:txt = "extractvalue {} {}" % [[extract_value.aggregate].type].stringify % [extract_value.aggregate].stringify;
+        for (W:index in extract_value.indices) {
+            [txt].extend[", {}" % index];
+        };
+        val = txt;
+    } elif (instruction.insert_value) {
+        IRInsertValueInstruction:insert_value = [instruction.insert_value].unwrap;
+        Str:txt = "insertvalue {} {}, {} {}" % [[insert_value.aggregate].type].stringify % [insert_value.aggregate].stringify % [[insert_value.elem].type].stringify % [insert_value.elem].stringify;
+        for (W:index in insert_value.indices) {
+            [txt].extend[", {}" % index];
+        };
+        val = txt;
+    } elif (instruction.alloca) {
+        val = ["alloca "] + [[[instruction.alloca].unwrap.type].stringify];
+    } elif (instruction.alloca_multiple) {
+        IRAllocaMultipleInstruction:alloca_multiple = [instruction.alloca_multiple].unwrap;
+        IRValue:count = alloca_multiple.count;
+        val = "alloca {}, {} {}" % [alloca_multiple.type].stringify % [[count].type].stringify % [count].stringify;
+    } elif (instruction.load) {
+        val = "load {}, ptr {}" % type_str % [[instruction.load].unwrap.ptr].stringify;
+    } elif (instruction.GEP) {
+        IRGEPInstruction:GEP = [instruction.GEP].unwrap;
+        Str:txt = "getelementptr {}, ptr {}" % [GEP.base_type].stringify % [GEP.ptr].stringify;
+        for (IRValue:index in GEP.indices) {
+            [txt].extend[", {} {}" % [[index].type].stringify % [index].stringify];
+        };
+        val = txt;
+    } elif (instruction.truncate) {
+        IRValue:v = [instruction.truncate].unwrap.v;
+        val = "trunc {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.unsigned_extend) {
+        IRValue:v = [instruction.unsigned_extend].unwrap.v;
+        val = "zext {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.signed_extend) {
+        IRValue:v = [instruction.signed_extend].unwrap.v;
+        val = "sext {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.float_truncate) {
+        IRValue:v = [instruction.float_truncate].unwrap.v;
+        val = "fptrunc {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.float_extend) {
+        IRValue:v = [instruction.float_extend].unwrap.v;
+        val = "fpext {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.float_to_unsigned) {
+        IRValue:v = [instruction.float_to_unsigned].unwrap.v;
+        val = "fptoui {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.float_to_signed) {
+        IRValue:v = [instruction.float_to_signed].unwrap.v;
+        val = "fptosi {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.unsigned_to_float) {
+        IRValue:v = [instruction.unsigned_to_float].unwrap.v;
+        val = "uitofp {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.signed_to_float) {
+        IRValue:v = [instruction.signed_to_float].unwrap.v;
+        val = "sitofp {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.ptr_to_int) {
+        IRValue:v = [instruction.ptr_to_int].unwrap.v;
+        val = "ptrtoint {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.int_to_ptr) {
+        IRValue:v = [instruction.int_to_ptr].unwrap.v;
+        val = "inttoptr {} {} to {}" % [[v].type].stringify % v % type_str;
+    } elif (instruction.int_compare) {
+        IRIntCompareInstruction:int_compare = [instruction.int_compare].unwrap;
+        Str:v1_type_str = [[int_compare.v1].type].stringify;
+        Str:v2_type_str = [[int_compare.v2].type].stringify;
+        if (![v1_type_str] equals [v2_type_str]) {
+            abort "Both operands of a comparison instruction must have the same IR type";
+        };
+        val = "icmp {} {} {}, {}" % int_compare.comp % v1_type_str % [int_compare.v1].stringify % [int_compare.v2].stringify;
+    } elif (instruction.float_compare) {
+        IRFloatCompareInstruction:float_compare = [instruction.float_compare].unwrap;
+        Str:v1_type_str = [[float_compare.v1].type].stringify;
+        Str:v2_type_str = [[float_compare.v2].type].stringify;
+        if (![v1_type_str] equals [v2_type_str]) {
+            abort "Both operands of a comparison instruction must have the same IR type";
+        };
+        val = "fcmp {} {} {}, {}" % float_compare.comp % v1_type_str % [float_compare.v1].stringify % [float_compare.v2].stringify;
+    } elif (instruction.PHI) {
+        IRPHIInstruction:PHI = [instruction.PHI].unwrap;
+        Str:txt = ["phi "] + [type_str];
+
+        if ([PHI.vals].len != [PHI.block_ids].len) {
+            abort "The PHI values and blocks must match in number one to one";
+        };
+
+        for (W:i enumerating PHI.vals) {
+            Str:frmt = " {} %{}";
+            if (i > 0) {
+                [frmt].insert[0][','];
+            };
+            [txt].extend[frmt % [PHI.vals[i]].stringify % PHI.block_ids[i]];
+        };
+
+        val = txt;
+    } elif (instruction.select) {
+        IRSelectInstruction:select = [instruction.select].unwrap;
+        val = "select {} {}, {} {}, {} {}" % [[select.cond].type].stringify % [select.cond].stringify % [[select.if_true].type].stringify % [select.if_true].stringify % [[select.if_false].type].stringify % [select.if_false].stringify;
+    } elif (instruction.call) {
+        val = [[instruction.call].unwrap].stringify with ret [type_str];
     } else {
         abort "Invalid IRValuedInstruction";
     };
@@ -79,10 +489,40 @@ IRRetInstruction {
     IRValue:returned
 }
 
+IRConditionalBranchInstruction {
+    IRValue:condition,
+    W:branch_id_if_true,
+    W:branch_id_if_false
+}
+
+IRUnconditionalBranchInstruction {
+    W:branch_id
+}
+
+IRSwitchInstruction {
+    IRValue:switch_on,
+    W:branch_id_default,
+    [IRConstant]:targets,
+    [W]:branch_ids
+}
+
+IRUnreachableInstruction {}
+
+IRStoreInstruction {
+    IRValue:val,
+    IRValue:ptr
+}
+
 IRInstruction {
     IRValuedInstruction?:valued,
     IRRetVoidInstruction?:ret_void,
     IRRetInstruction?:ret,
+    IRConditionalBranchInstruction?:conditional_branch,
+    IRUnconditionalBranchInstruction?:unconditional_branch,
+    IRSwitchInstruction?:switch_,
+    IRUnreachableInstruction?:unreachable,
+    IRStoreInstruction?:store,
+    IRCallInstruction?:void_call
 }
 
 Str#<IRInstruction:instruction>.stringify {
@@ -93,6 +533,36 @@ Str#<IRInstruction:instruction>.stringify {
     } elif (instruction.ret) {
         IRValue:returned = [instruction.ret].unwrap.returned;
         return "ret {} {}" % [[returned].type].stringify % [returned].stringify;
+    } elif (instruction.conditional_branch) {
+        IRConditionalBranchInstruction:conditional_branch = [instruction.conditional_branch].unwrap;
+        return "br i1 {}, label %{}, label %{}" % [conditional_branch.condition].stringify % conditional_branch.branch_id_if_true % conditional_branch.branch_id_if_false;
+    } elif (instruction.unconditional_branch) {
+        return "br label %{}" % [instruction.unconditional_branch].unwrap.branch_id;
+    } elif (instruction.switch_) {
+        IRSwitchInstruction:switch_ = [instruction.switch_].unwrap;
+
+        if ([switch_.targets].len != [switch_.branch_ids].len) {
+            abort "The number of switch target values ({}) does not match the number of switch non-default branches ({})" % [switch_.targets].len % [switch_.branch_ids].len;
+        };
+
+        Str:table_body = "";
+
+        for (W:i enumerating switch_.targets) {
+            IRConstant:const = switch_.targets[i];
+            if (table_body) {
+                [table_body].append[' '];
+            };
+            [table_body].extend["{} {}, label %{}" % [const.type].stringify % [const].stringify % switch_.branch_ids[i]];
+        };
+
+        return "switch {} {}, label %{} [ {} ]" % [switch_.switch_on].type % [switch_.switch_on].stringify % switch_.branch_id_default % table_body;
+    } elif (instruction.unreachable) {
+        return "unreachable";
+    } elif (instruction.store) {
+        IRStoreInstruction:store = [instruction.store].unwrap;
+        return "store {} {}, ptr {}" % [[store.val].type].stringify % [store.val].stringify % [store.ptr].stringify;
+    } elif (instruction.void_call) {
+        return [[instruction.void_call].unwrap].stringify with ret ["void"];
     } else {
         abort "Invalid IRInstruction";
     };
@@ -140,6 +610,7 @@ Str#<IRBasicBlock:basic_block>.stringify {
 
 IRFuncBody {
     [IRBasicBlock]:blocks,
+    // Usage both for IRRegister names and IRBasicBlock ids
     W:register_id_counter
 }
 
