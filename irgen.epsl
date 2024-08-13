@@ -14,7 +14,7 @@ Str#<IRStructDef:struct_def>.stringify {
 }
 
 IRIntConstant {
-    W:val
+    Z:val
 }
 
 IRFloatConstant {
@@ -610,8 +610,8 @@ Str#<IRBasicBlock:basic_block>.stringify {
 
 IRFuncBody {
     [IRBasicBlock]:blocks,
-    // Usage both for IRRegister names and IRBasicBlock ids
-    W:register_id_counter
+    // for both IRRegister names and IRBasicBlock ids
+    W:id_counter
 }
 
 Str#<IRFuncBody:func_body>.stringify {
