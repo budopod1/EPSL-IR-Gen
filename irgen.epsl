@@ -595,7 +595,8 @@ Str#<IRValue:val>.stringify {
 
 IRBasicBlock {
     W:id,
-    [IRInstruction]:instructions
+    [IRInstruction]:instructions,
+    Bool:is_terminated
 }
 
 Str#<IRBasicBlock:basic_block>.stringify {
@@ -626,6 +627,7 @@ IRFunc {
     IRType:ret_type,
     Str:name,
     [IRRegister]:args,
+    Bool:has_vargs,
     IRFuncBody?:body
 }
 
@@ -636,6 +638,9 @@ Str#<IRFunc:func>.stringify {
             [stringified_args].extend[", "];
         };
         [stringified_args].extend[[func.args[i]].stringify];
+    };
+    if (func.has_vargs) {
+        [stringified_args].extend[", ..."];
     };
     Str:result = "declare {} @{}({})" % [func.ret_type].stringify
         % func.name % stringified_args;
