@@ -43,12 +43,31 @@ Str#<IRConstant:const>.stringify {
 }
 
 IRRegister {
+    Bool:is_global,
     Str:name,
     IRType:type
 }
 
+Bool#<Str:str>.requires_quotes {
+    for (Byte:chr in str) {
+        if (!((chr >= '0' && chr <= '0') || (chr >= 'a' && chr <= 'z')
+            || (chr >= 'A' && chr <= 'Z') || chr == '_')) {
+            return true;
+        };
+    };
+    return false;
+}
+
 Str#<IRRegister:register>.stringify {
-    return ["%"] + [register.name];
+    Str:name = register.name;
+    if ([name].requires_quotes) {
+        name = str_for_IR[name];
+    };
+    if (register.is_global) {
+        return ["@"] + [name];
+    } else {
+        return ["%"] + [name];
+    };
 }
 
 IRFloatNegationInstruction {
@@ -263,7 +282,7 @@ Str#<IRCallInstruction:call>.stringify with ret <Str:ret> {
     Str:arg_txt = "";
     for (IRValue:arg in call.args) {
         Str:frmt = "{} {}";
-        if (arg_txt) {
+        if ([arg_txt].len) {
             frmt = ", {} {}";
         };
         [arg_txt].extend[frmt % [[arg].type].stringify % [arg].stringify];
@@ -620,7 +639,7 @@ Str#<IRFuncBody:func_body>.stringify {
     for (IRBasicBlock:block in func_body.blocks) {
         [blocks_stringified].extend[[block].stringify];
     };
-    return "{\n{}}" % blocks_stringified;
+    return " {\n{}}" % blocks_stringified;
 }
 
 IRFunc {
@@ -637,47 +656,116 @@ Str#<IRFunc:func>.stringify {
         if (i > 0) {
             [stringified_args].extend[", "];
         };
-        [stringified_args].extend[[func.args[i]].stringify];
+        IRRegister:arg = func.args[i];
+        [stringified_args].extend["{} {}" % [arg.type].stringify % [arg].stringify];
     };
     if (func.has_vargs) {
         [stringified_args].extend[", ..."];
     };
-    Str:result = "declare {} @{}({})" % [func.ret_type].stringify
+    Str:statement = "declare";
+    if (func.body) {
+        statement = "define";
+    };
+    Str:result = "{} {} @{}({})" % statement % [func.ret_type].stringify
         % func.name % stringified_args;
-    if (![func.body].is_null) {
+    if (func.body) {
         [result].extend[[[func.body].unwrap].stringify];
     };
     [result].extend["\n\n"];
     return result;
 }
 
+IRGlobal {
+    IRRegister:register,
+    Str?:linkage,
+    Bool:named_addr,
+    Bool:is_const,
+    IRType:type,
+    IRConstant?:basic_init,
+    Str?:str_init
+}
+
+Str#<IRGlobal:global>.stringify {
+    Str:specifiers = "";
+    if (global.linkage) {
+        [specifiers].append[' '];
+        [specifiers].extend[[global.linkage].unwrap];
+    };
+    if (!global.named_addr) {
+        [specifiers].extend[" unnamed_addr"];
+    };
+    if (global.is_const) {
+        [specifiers].extend[" constant"];
+    } else {
+        [specifiers].extend[" global"];
+    };
+
+    Str:init_val = "";
+    if (global.basic_init) {
+        init_val = [" "] + [[[global.basic_init].unwrap.type].stringify];
+    } elif (global.str_init) {
+        init_val = [" c"] + [str_for_IR[[global.str_init].unwrap]];
+    };
+
+    return "{} ={} {}{}" % [global.register].stringify % specifiers
+        % [global.type].stringify % init_val;
+}
+
+Str#str_for_IR<Str:str> {
+    Str:body = "\"";
+    for (Byte:chr in str) {
+        if (chr == '\\') {
+            [body].extend["\\\\"];
+        // TODO: replace (Bytel)34 with '"' once possible
+        } elif (chr >= ' ' && chr <= '~' && chr != '"') {
+            [body].append[chr];
+        } else {
+            Str:hex_nibbles = "0123456789ABCDEF";
+            [body].append['\\'];
+            [body].append[hex_nibbles[[chr] >> [4]]];
+            [body].append[hex_nibbles[[chr] & [15]]];
+        };
+    };
+    [body].append['"'];
+    return body;
+}
+
 IRModule {
     Str:target_triple,
     Str:target_datalayout,
     Str:source_filename,
+    [IRGlobal]:globals,
     [IRStructDef]:struct_defs,
     [IRFunc]:funcs
 }
 
 Str#<IRModule:module>.stringify {
+    Str:globals_stringified = "";
+    for (IRGlobal:global in module.globals) {
+        [globals_stringified].extend[[global].stringify];
+        [globals_stringified].append['\n'];
+    };
+
     Str:struct_defs_stringified = "";
     for (IRStructDef:struct_def in module.struct_defs) {
         [struct_defs_stringified].extend[[struct_def].stringify];
         [struct_defs_stringified].append['\n'];
     };
+
     Str:funcs_stringified = "";
     for (IRFunc:func in module.funcs) {
         [funcs_stringified].extend[[func].stringify];
         [funcs_stringified].extend["\n\n"];
     };
+
     return "target triple = \"{}\"
 target datalayout = \"{}\"
 source_filename = \"{}\"
 
 {}
-
+{}
 {}" % module.target_triple % module.target_datalayout % module.source_filename
-        % struct_defs_stringified % funcs_stringified;
+        % globals_stringified % struct_defs_stringified % funcs_stringified;
 }
 
 IRPtrType {}
