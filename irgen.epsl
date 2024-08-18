@@ -48,6 +48,14 @@ IRRegister {
     IRType:type
 }
 
+Str#<Str:str>.quote_if_required {
+    if ([str].requires_quotes) {
+        return str_for_IR[str];
+    } else {
+        return str;
+    };
+}
+
 Bool#<Str:str>.requires_quotes {
     for (Byte:chr in str) {
         if (!((chr >= '0' && chr <= '0') || (chr >= 'a' && chr <= 'z')
@@ -59,10 +67,7 @@ Bool#<Str:str>.requires_quotes {
 }
 
 Str#<IRRegister:register>.stringify {
-    Str:name = register.name;
-    if ([name].requires_quotes) {
-        name = str_for_IR[name];
-    };
+    Str:name = [register.name].quote_if_required;
     if (register.is_global) {
         return ["@"] + [name];
     } else {
@@ -288,7 +293,7 @@ Str#<IRCallInstruction:call>.stringify with ret <Str:ret> {
         [arg_txt].extend[frmt % [[arg].type].stringify % [arg].stringify];
     };
 
-    return "call {} @{}({})" % sig % call.name % arg_txt;
+    return "call {} @{}({})" % sig % [call.name].quote_if_required % arg_txt;
 }
 
 IRValuedInstruction {
@@ -463,7 +468,7 @@ Str#<IRValuedInstruction:instruction>.stringify {
         Str:v1_type_str = [[int_compare.v1].type].stringify;
         Str:v2_type_str = [[int_compare.v2].type].stringify;
         if (![v1_type_str] equals [v2_type_str]) {
-            abort "Both operands of a comparison instruction must have the same IR type";
+            abort "Both operands of a comparison instruction must have the same IR type (found types {} and {})" % v1_type_str % v2_type_str;
         };
         val = "icmp {} {} {}, {}" % int_compare.comp % v1_type_str % [int_compare.v1].stringify % [int_compare.v2].stringify;
     } elif (instruction.float_compare) {
@@ -471,7 +476,7 @@ Str#<IRValuedInstruction:instruction>.stringify {
         Str:v1_type_str = [[float_compare.v1].type].stringify;
         Str:v2_type_str = [[float_compare.v2].type].stringify;
         if (![v1_type_str] equals [v2_type_str]) {
-            abort "Both operands of a comparison instruction must have the same IR type";
+            abort "Both operands of a comparison instruction must have the same IR type (found types {} and {})" % v1_type_str % v2_type_str;
         };
         val = "fcmp {} {} {}, {}" % float_compare.comp % v1_type_str % [float_compare.v1].stringify % [float_compare.v2].stringify;
     } elif (instruction.PHI) {
@@ -554,9 +559,9 @@ Str#<IRInstruction:instruction>.stringify {
         return "ret {} {}" % [[returned].type].stringify % [returned].stringify;
     } elif (instruction.conditional_branch) {
         IRConditionalBranchInstruction:conditional_branch = [instruction.conditional_branch].unwrap;
-        return "br i1 {}, label %{}, label %{}" % [conditional_branch.condition].stringify % conditional_branch.branch_id_if_true % conditional_branch.branch_id_if_false;
+        return "br i1 {}, label %b{}, label %b{}" % [conditional_branch.condition].stringify % conditional_branch.branch_id_if_true % conditional_branch.branch_id_if_false;
     } elif (instruction.unconditional_branch) {
-        return "br label %{}" % [instruction.unconditional_branch].unwrap.branch_id;
+        return "br label %b{}" % [instruction.unconditional_branch].unwrap.branch_id;
     } elif (instruction.switch_) {
         IRSwitchInstruction:switch_ = [instruction.switch_].unwrap;
 
@@ -571,10 +576,10 @@ Str#<IRInstruction:instruction>.stringify {
             if (table_body) {
                 [table_body].append[' '];
             };
-            [table_body].extend["{} {}, label %{}" % [const.type].stringify % [const].stringify % switch_.branch_ids[i]];
+            [table_body].extend["{} {}, label %b{}" % [const.type].stringify % [const].stringify % switch_.branch_ids[i]];
         };
 
-        return "switch {} {}, label %{} [ {} ]" % [switch_.switch_on].type % [switch_.switch_on].stringify % switch_.branch_id_default % table_body;
+        return "switch {} {}, label %b{} [ {} ]" % [switch_.switch_on].type % [switch_.switch_on].stringify % switch_.branch_id_default % table_body;
     } elif (instruction.unreachable) {
         return "unreachable";
     } elif (instruction.store) {
@@ -667,7 +672,7 @@ Str#<IRFunc:func>.stringify {
         statement = "define";
     };
     Str:result = "{} {} @{}({})" % statement % [func.ret_type].stringify
-        % func.name % stringified_args;
+        % [func.name].quote_if_required % stringified_args;
     if (func.body) {
         [result].extend[[[func.body].unwrap].stringify];
     };
