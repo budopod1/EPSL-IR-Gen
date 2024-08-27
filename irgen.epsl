@@ -5,11 +5,12 @@ IRStructDef {
 }
 
 Str#<IRStructDef:struct_def>.stringify {
+    Str:name = [struct_def.name].quote_if_required;
     if (struct_def.is_opaque) {
-        return "%{} = type opaque" % struct_def.name;
+        return "%{} = type opaque" % name;
     } else {
         Str:type_str = [[struct_def.struct].unwrap].stringify;
-        return "%{} = type {}" % struct_def.name % type_str;
+        return "%{} = type {}" % name % type_str;
     };
 }
 
@@ -488,11 +489,10 @@ Str#<IRValuedInstruction:instruction>.stringify {
         };
 
         for (W:i enumerating PHI.vals) {
-            Str:frmt = " {} %{}";
             if (i > 0) {
-                [frmt].insert[0][','];
+                [txt].extend[", "];
             };
-            [txt].extend[frmt % [PHI.vals[i]].stringify % PHI.block_ids[i]];
+            [txt].extend[" [ {}, %b{} ]" % [PHI.vals[i]].stringify % PHI.block_ids[i]];
         };
 
         val = txt;
@@ -707,7 +707,7 @@ Str#<IRGlobal:global>.stringify {
 
     Str:init_val = "";
     if (global.basic_init) {
-        init_val = [" "] + [[[global.basic_init].unwrap.type].stringify];
+        init_val = [" "] + [[[global.basic_init].unwrap].stringify];
     } elif (global.str_init) {
         init_val = [" c"] + [str_for_IR[[global.str_init].unwrap]];
     };
@@ -794,6 +794,17 @@ IRStructType {
     [IRType]:members
 }
 
+Str#<IRStructType:struct_type>.stringify {
+    Str:inner = "";
+    for (W:i enumerating struct_type.members) {
+        if (i > 0) {
+            [inner].extend[", "];
+        };
+        [inner].extend[[struct_type.members[i]].stringify];
+    };
+    return "{{}}" % inner;
+}
+
 IRIdentifiedStructType {
     Str:name
 }
@@ -837,17 +848,9 @@ Str#<IRType:type>.stringify {
         IRArrayType:arr = [type.array].unwrap;
         return "[{} x {}]" % arr.elem_count % [arr.elem_type].stringify;
     } elif (![type.literal_struct].is_null) {
-        Str:inner = "";
-        [IRType]:members = [type.literal_struct].unwrap.members;
-        for (W:i enumerating members) {
-            if (i > 0) {
-                [inner].extend[", "];
-            };
-            [inner].extend[[members[i]].stringify];
-        };
-        return "{{}}" % inner;
+        return [[type.literal_struct].unwrap].stringify;
     } elif (![type.identified_struct].is_null) {
-        return "%{}" % [type.identified_struct].unwrap.name;
+        return ["%"] + [[[type.identified_struct].unwrap.name].quote_if_required];
     } else {
         abort "Invalid IR type";
     };
