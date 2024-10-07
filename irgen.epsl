@@ -579,7 +579,7 @@ Str#<IRInstruction:instruction>.stringify {
             [table_body].extend["{} {}, label %b{}" % [const.type].stringify % [const].stringify % switch_.branch_ids[i]];
         };
 
-        return "switch {} {}, label %b{} [ {} ]" % [switch_.switch_on].type % [switch_.switch_on].stringify % switch_.branch_id_default % table_body;
+        return "switch {} {}, label %b{} [ {} ]" % [[switch_.switch_on].type].stringify % [switch_.switch_on].stringify % switch_.branch_id_default % table_body;
     } elif (instruction.unreachable) {
         return "unreachable";
     } elif (instruction.store) {
