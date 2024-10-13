@@ -34,7 +34,7 @@ IRConstant {
 }
 
 Str#bytes_to_hex<[Byte]:bytes> {
-    Str:hex_nibbles = "0123456789ABCEDF";
+    Str:hex_nibbles = "0123456789ABCDEF";
     Str:result = Str*([bytes].len * 2);
     W:i = [result].len - 1;
     for (Byte:byte in bytes step -1) {
