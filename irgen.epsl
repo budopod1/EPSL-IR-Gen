@@ -310,7 +310,7 @@ IRSelectInstruction {
 }
 
 IRCallInstruction {
-    Str:name,
+    IRRegister:register,
     [IRValue]:args,
     W:varg_count
 }
@@ -336,7 +336,7 @@ Str#<IRCallInstruction:call>.stringify with ret <Str:ret> {
         [arg_txt].extend[frmt % [[arg].type].stringify % [arg].stringify];
     };
 
-    return "call {} @{}({})" % sig % [call.name].quote_if_required % arg_txt;
+    return "call {} {}({})" % sig % [call.register].stringify % arg_txt;
 }
 
 IRValuedInstruction {
