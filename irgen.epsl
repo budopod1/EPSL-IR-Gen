@@ -419,13 +419,13 @@ Str#<IRValuedInstruction:instruction>.stringify {
         val = "fdiv {} {}, {}" % type_str % [float_division.v1].stringify % [float_division.v2].stringify;
     } elif (instruction.unsigned_modulo) {
         IRUnsignedModuloInstruction:unsigned_modulo = [instruction.unsigned_modulo].unwrap;
-        val = "umod {} {}, {}" % type_str % [unsigned_modulo.v1].stringify % [unsigned_modulo.v2].stringify;
+        val = "urem {} {}, {}" % type_str % [unsigned_modulo.v1].stringify % [unsigned_modulo.v2].stringify;
     } elif (instruction.signed_modulo) {
         IRSignedModuloInstruction:signed_modulo = [instruction.signed_modulo].unwrap;
-        val = "smod {} {}, {}" % type_str % [signed_modulo.v1].stringify % [signed_modulo.v2].stringify;
+        val = "srem {} {}, {}" % type_str % [signed_modulo.v1].stringify % [signed_modulo.v2].stringify;
     } elif (instruction.float_modulo) {
         IRFloatModuloInstruction:float_modulo = [instruction.float_modulo].unwrap;
-        val = "fmod {} {}, {}" % type_str % [float_modulo.v1].stringify % [float_modulo.v2].stringify;
+        val = "frem {} {}, {}" % type_str % [float_modulo.v1].stringify % [float_modulo.v2].stringify;
     } elif (instruction.left_shift) {
         IRLeftShiftInstruction:left_shift = [instruction.left_shift].unwrap;
         val = "shl {} {}, {}" % type_str % [left_shift.v1].stringify % [left_shift.v2].stringify;
