@@ -768,7 +768,6 @@ Str#str_for_IR<Str:str> {
     for (Byte:chr in str) {
         if (chr == '\\') {
             [body].extend["\\\\"];
-        // TODO: replace (Bytel)34 with '"' once possible
         } elif (chr >= ' ' && chr <= '~' && chr != '"') {
             [body].append[chr];
         } else {
