@@ -6,7 +6,7 @@ IRStructDef {
     IRStructType?:struct
 }
 
-Str#<IRStructDef:struct_def>.stringify {
+Str#[IRStructDef:struct_def].stringify {
     Str:name = [struct_def.name].quote_if_required;
     if (struct_def.is_opaque) {
         return "%{} = type opaque" % name;
@@ -33,7 +33,7 @@ IRConstant {
     IRNullConstant?:null_
 }
 
-Str#bytes_to_hex<[Byte]:bytes> {
+Str#bytes_to_hex[[Byte]:bytes] {
     Str:hex_nibbles = "0123456789ABCDEF";
     Str:result = Str*([bytes].len * 2);
     W:i = [result].len - 1;
@@ -44,7 +44,7 @@ Str#bytes_to_hex<[Byte]:bytes> {
     return result;
 }
 
-Str#<IRConstant:const>.stringify {
+Str#[IRConstant:const].stringify {
     if (const.int) {
         return [[const.int].unwrap.val].stringify;
     } elif (const.float) {
@@ -91,7 +91,7 @@ IRRegister {
     IRType:type
 }
 
-Str#<Str:str>.quote_if_required {
+Str#[Str:str].quote_if_required {
     if ([str].requires_quotes) {
         return str_for_IR[str];
     } else {
@@ -99,7 +99,7 @@ Str#<Str:str>.quote_if_required {
     };
 }
 
-Bool#<Str:str>.requires_quotes {
+Bool#[Str:str].requires_quotes {
     for (Byte:chr in str) {
         if (!((chr >= '0' && chr <= '0') || (chr >= 'a' && chr <= 'z')
             || (chr >= 'A' && chr <= 'Z') || chr == '_')) {
@@ -109,7 +109,7 @@ Bool#<Str:str>.requires_quotes {
     return false;
 }
 
-Str#<IRRegister:register>.stringify {
+Str#[IRRegister:register].stringify {
     Str:name = [register.name].quote_if_required;
     if (register.is_global) {
         return ["@"] + [name];
@@ -315,7 +315,7 @@ IRCallInstruction {
     W:varg_count
 }
 
-Str#<IRCallInstruction:call>.stringify with ret <Str:ret> {
+Str#[IRCallInstruction:call].stringify with ret [Str:ret] {
     Str:sig = ret;
 
     if (call.varg_count) {
@@ -384,7 +384,7 @@ IRValuedInstruction {
     IRCallInstruction?:call
 }
 
-Str#<IRValuedInstruction:instruction>.stringify {
+Str#[IRValuedInstruction:instruction].stringify {
     Str?:val = null;
     Str:type_str = [instruction.register.type].stringify;
     if (instruction.float_negation) {
@@ -591,7 +591,7 @@ IRInstruction {
     IRCallInstruction?:void_call
 }
 
-Str#<IRInstruction:instruction>.stringify {
+Str#[IRInstruction:instruction].stringify {
     if (instruction.valued) {
         return [[instruction.valued].unwrap].stringify;
     } elif (instruction.ret_void) {
@@ -639,7 +639,7 @@ IRValue {
     IRConstant?:constant
 }
 
-IRType#<IRValue:val>.type {
+IRType#[IRValue:val].type {
     if (val.register) {
         return [val.register].unwrap.type;
     } elif (val.constant) {
@@ -649,7 +649,7 @@ IRType#<IRValue:val>.type {
     };
 }
 
-Str#<IRValue:val>.stringify {
+Str#[IRValue:val].stringify {
     if (val.register) {
         return [[val.register].unwrap].stringify;
     } elif (val.constant) {
@@ -665,7 +665,7 @@ IRBasicBlock {
     Bool:is_terminated
 }
 
-Str#<IRBasicBlock:basic_block>.stringify {
+Str#[IRBasicBlock:basic_block].stringify {
     Str:result = "b{}:\n" % basic_block.id;
     for (IRInstruction:instruction in basic_block.instructions) {
         [result].extend["  "];
@@ -681,7 +681,7 @@ IRFuncBody {
     W:id_counter
 }
 
-Str#<IRFuncBody:func_body>.stringify {
+Str#[IRFuncBody:func_body].stringify {
     Str:blocks_stringified = "";
     for (IRBasicBlock:block in func_body.blocks) {
         [blocks_stringified].extend[[block].stringify];
@@ -698,7 +698,7 @@ IRFunc {
     IRFuncBody?:body
 }
 
-Str#<IRFunc:func>.stringify {
+Str#[IRFunc:func].stringify {
     Str:stringified_args = "";
     for (W:i enumerating func.args) {
         if (i > 0) {
@@ -737,7 +737,7 @@ IRGlobal {
     Str?:str_init
 }
 
-Str#<IRGlobal:global>.stringify {
+Str#[IRGlobal:global].stringify {
     Str:specifiers = "";
     if (global.linkage) {
         [specifiers].append[' '];
@@ -763,7 +763,7 @@ Str#<IRGlobal:global>.stringify {
         % [global.type].stringify % init_val;
 }
 
-Str#str_for_IR<Str:str> {
+Str#str_for_IR[Str:str] {
     Str:body = "\"";
     for (Byte:chr in str) {
         if (chr == '\\') {
@@ -790,7 +790,7 @@ IRModule {
     [IRFunc]:funcs
 }
 
-Str#<IRModule:module>.stringify {
+Str#[IRModule:module].stringify {
     Str:globals_stringified = "";
     for (IRGlobal:global in module.globals) {
         [globals_stringified].extend[[global].stringify];
@@ -840,7 +840,7 @@ IRStructType {
     [IRType]:members
 }
 
-Str#<IRStructType:struct_type>.stringify {
+Str#[IRStructType:struct_type].stringify {
     Str:inner = "";
     for (W:i enumerating struct_type.members) {
         if (i > 0) {
@@ -865,7 +865,7 @@ IRType {
     IRIdentifiedStructType?:identified_struct,
 }
 
-Str#<IRType:type>.stringify {
+Str#[IRType:type].stringify {
     if (![type.ptr].is_null) {
         return "ptr";
     } elif (![type.int].is_null) {
