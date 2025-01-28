@@ -717,7 +717,7 @@ Str#[IRFuncBody:func_body].stringify {
 
 IRFunc {
     IRType:ret_type,
-    Str?:linkage,
+    Str:specifiers,
     Str:name,
     [IRRegister]:args,
     Bool:has_vargs,
@@ -740,11 +740,9 @@ Str#[IRFunc:func].stringify {
     if (func.body) {
         statement = "define";
     };
-    statement = [statement].clone;
-    if (func.linkage) {
-        [statement].append[' '];
-        [statement].extend[[func.linkage].unwrap];
-    };
+    println[func.name];
+    println[func.specifiers];
+    statement = [statement] + [func.specifiers];
     Str:result = "{} {} @{}({})" % statement % [func.ret_type].stringify
         % [func.name].quote_if_required % stringified_args;
     if (func.body) {
