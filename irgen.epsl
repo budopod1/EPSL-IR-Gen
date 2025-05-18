@@ -715,11 +715,17 @@ Str#[IRFuncBody:func_body].stringify {
     return " {\n{}}" % blocks_stringified;
 }
 
+IRArgument {
+    IRType:type,
+    [Str]:metadatas,
+    Str?:name
+}
+
 IRFunc {
     IRType:ret_type,
     Str:specifiers,
     Str:name,
-    [IRRegister]:args,
+    [IRArgument]:args,
     Bool:has_vargs,
     IRFuncBody?:body
 }
@@ -730,8 +736,17 @@ Str#[IRFunc:func].stringify {
         if (i > 0) {
             [stringified_args].extend[", "];
         };
-        IRRegister:arg = func.args[i];
-        [stringified_args].extend["{} {}" % [arg.type].stringify % [arg].stringify];
+        IRArgument:arg = func.args[i];
+        // [stringified_args].extend["{} {}" % [arg.type].stringify % [arg].stringify];
+        [stringified_args].extend[[arg.type].stringify];
+        for (Str:metadata in arg.metadatas) {
+            [stringified_args].append[' '];
+            [stringified_args].extend[metadata];
+        };
+        given (arg.name as Str:name) {
+            [stringified_args].extend[" %"];
+            [stringified_args].extend[name];
+        };
     };
     if (func.has_vargs) {
         [stringified_args].extend[", ..."];
