@@ -755,8 +755,6 @@ Str#[IRFunc:func].stringify {
     if (func.body) {
         statement = "define";
     };
-    println[func.name];
-    println[func.specifiers];
     statement = [statement] + [func.specifiers];
     Str:result = "{} {} @{}({})" % statement % [func.ret_type].stringify
         % [func.name].quote_if_required % stringified_args;
