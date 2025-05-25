@@ -341,13 +341,13 @@ IRCallInstruction {
     W:varg_count
 }
 
-Str#[IRCallInstruction:call].stringify with ret type_ str [Str:ret] {
+Str#[IRCallInstruction:call].stringify with ret [Str:ret] {
     Str:sig = ret;
 
     if (call.varg_count) {
         Str:arg_type_txt = [""].clone;
-        for (L:i to [call.args].len - call.varg_count) {
-            [arg_type_txt].extend[[[call.args[i]].type].stringify];
+        for (IRValue:arg in call.args to [call.args].len - call.varg_count) {
+            [arg_type_txt].extend[[[arg].type].stringify];
             [arg_type_txt].extend[", "];
         };
         sig = "{} ({}...)" % ret % arg_type_txt;
@@ -568,7 +568,7 @@ Str#[IRValuedInstruction:instruction].stringify {
         IRSelectInstruction:select = [instruction.select].unwrap;
         val = "select {} {}, {} {}, {} {}" % [[select.cond].type].stringify % [select.cond].stringify % [[select.if_true].type].stringify % [select.if_true].stringify % [[select.if_false].type].stringify % [select.if_false].stringify;
     } elif (instruction.call) {
-        val = [[instruction.call].unwrap].stringify with ret type_ str [type_str];
+        val = [[instruction.call].unwrap].stringify with ret [type_str];
     } else {
         abort "Invalid IRValuedInstruction";
     };
@@ -654,7 +654,7 @@ Str#[IRInstruction:instruction].stringify {
         IRStoreInstruction:store = [instruction.store].unwrap;
         return "store {} {}, ptr {}" % [[store.val].type].stringify % [store.val].stringify % [store.ptr].stringify;
     } elif (instruction.void_call) {
-        return [[instruction.void_call].unwrap].stringify with ret type_ str ["void"];
+        return [[instruction.void_call].unwrap].stringify with ret ["void"];
     } else {
         abort "Invalid IRInstruction";
     };
