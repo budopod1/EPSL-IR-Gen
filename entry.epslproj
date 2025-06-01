@@ -1,4 +1,5 @@
 {
+    "file": "irgen",
     "output-type": "package-both",
     "cache-mode": "always"
 }
