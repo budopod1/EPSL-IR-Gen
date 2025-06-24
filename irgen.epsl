@@ -1,4 +1,4 @@
-#import packing;
+#import conversion;
 
 IRStructDef {
     Str:name,
@@ -17,7 +17,7 @@ Str#[IRStructDef:struct_def].stringify {
 }
 
 IRIntConstant {
-    Z:val
+    L:val
 }
 
 IRFloatConstant {
@@ -28,19 +28,27 @@ IRStructConstant {
     [IRConstant]:elements
 }
 
+IRArrayConstant {
+    [IRConstant]:elements
+}
+
 IRGlobalPtrConstant {
     IRRegister:register
 }
 
 IRNullConstant {}
 
+IRPoisonConstant {}
+
 IRConstant {
     IRType:type,
     IRIntConstant?:int,
     IRFloatConstant?:float,
     IRStructConstant?:struct_,
+    IRArrayConstant?:array,
     IRGlobalPtrConstant?:global_ptr,
-    IRNullConstant?:null_
+    IRNullConstant?:null_,
+    IRPoisonConstant?:poison
 }
 
 Str#bytes_to_hex[[Byte]:bytes] {
@@ -55,10 +63,10 @@ Str#bytes_to_hex[[Byte]:bytes] {
 }
 
 Str#[IRConstant:const].stringify {
-    if (const.int) {
-        return [[const.int].unwrap.val].stringify;
-    } elif (const.float) {
-        Q:val = [const.float].unwrap.val;
+    given (const.int as IRIntConstant:int) {
+        return [int.val].stringify;
+    } given (const.float as IRFloatConstant:float) {
+        Q:val = float.val;
         W:bits = (W)[const.type.float].unwrap.bits;
         if (bits == 16) {
             val = (Q16)val;
@@ -82,14 +90,13 @@ Str#[IRConstant:const].stringify {
         } elif (bits == 128) {
             // result_start = "0xL";
             // bytes = [(Q128)val].pack;
-            abort "128 float constants not yet supported";
+            abort "128 bit float constants are not yet supported";
         } else {
             abort "{} is an invalid number of bits for a float constant" % bits;
         };
 
         return [result_start] + [bytes_to_hex[bytes]];
-    } elif (const.struct_) {
-        IRStructConstant:struct_ = [const.struct_].unwrap;
+    } given (const.struct_ as IRStructConstant:struct_) {
         Str:result = [""].clone;
         for (L:i enumerating struct_.elements) {
             if (i > 0) {
@@ -102,10 +109,25 @@ Str#[IRConstant:const].stringify {
             [result].extend[[element].stringify];
         };
         return "{{} }" % result;
-    } elif (const.global_ptr) {
-        return [[const.global_ptr].unwrap.register].stringify;
-    } elif (const.null_) {
+    } given (const.array as IRArrayConstant:array) {
+        Str:result = [""].clone;
+        for (L:i enumerating array.elements) {
+            if (i > 0) {
+                [result].append[','];
+            };
+            [result].append[' '];
+            IRConstant:element = array.elements[i];
+            [result].extend[[element.type].stringify];
+            [result].append[' '];
+            [result].extend[[element].stringify];
+        };
+        return "[{} ]" % result;
+    } given (const.global_ptr as IRGlobalPtrConstant:global_ptr) {
+        return [global_ptr.register].stringify;
+    } given (const.null_ as IRNullConstant:null_) {
         return "null";
+    } given (const.poison as IRPoisonConstant:poison) {
+        return "poison";
     } else {
         abort "Invalid IR constant";
     };
