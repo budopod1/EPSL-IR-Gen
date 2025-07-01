@@ -739,7 +739,7 @@ Str#[IRFuncBody:func_body].stringify {
 
 IRArgument {
     IRType:type,
-    [Str]:metadatas,
+    [Str]:attrs,
     Str?:name
 }
 
@@ -749,6 +749,7 @@ IRFunc {
     Str:name,
     [IRArgument]:args,
     Bool:has_vargs,
+    [Str]:fn_attrs,
     IRFuncBody?:body
 }
 
@@ -761,9 +762,9 @@ Str#[IRFunc:func].stringify {
         IRArgument:arg = func.args[i];
         // [stringified_args].extend["{} {}" % [arg.type].stringify % [arg].stringify];
         [stringified_args].extend[[arg.type].stringify];
-        for (Str:metadata in arg.metadatas) {
+        for (Str:attr in arg.attrs) {
             [stringified_args].append[' '];
-            [stringified_args].extend[metadata];
+            [stringified_args].extend[attr];
         };
         given (arg.name as Str:name) {
             [stringified_args].extend[" %"];
@@ -780,6 +781,10 @@ Str#[IRFunc:func].stringify {
     statement = [statement] + [func.specifiers];
     Str:result = "{} {} @{}({})" % statement % [func.ret_type].stringify
         % [func.name].quote_if_required % stringified_args;
+    for (Str:fn_attr in func.fn_attrs) {
+        [result].append[' '];
+        [result].extend[fn_attr];
+    };
     if (func.body) {
         [result].extend[[[func.body].unwrap].stringify];
     };
