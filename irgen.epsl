@@ -196,118 +196,83 @@ Str#[IRBaseCallInstruction:call].stringify with ret [Str:ret] {
     return "call {} {}({})" % sig % [call.register].stringify % arg_txt;
 }
 
+Str#stringify binary [:IRBinaryInstruction:instr] name: [Str:name] type_str: [Str:type_str] {
+    Str:flags_str = [""].clone;
+    for (Str:flag in instr.flags) {
+        [flags_str].append[' '];
+        [flags_str].extend[flag];
+    };
+    return "{}{} {} {}, {}" % name % flags_str % type_str
+        % [instr.v1].stringify % [instr.v2].stringify;
+}
+
 @extends IRValuedInstruction;
 IRFloatNegationInstruction {
     IRValue:v
 }
 
+// binary in this case means "two operands"
+@super;
 @extends IRValuedInstruction;
-IRAdditionInstruction {
+IRBinaryInstruction {
+    [Str]:flags,
     IRValue:v1,
     IRValue:v2
 }
 
-@extends IRValuedInstruction;
-IRFloatAdditionInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRAdditionInstruction {}
 
-@extends IRValuedInstruction;
-IRSubtractionInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRFloatAdditionInstruction {}
 
-@extends IRValuedInstruction;
-IRFloatSubtractionInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRSubtractionInstruction {}
 
-@extends IRValuedInstruction;
-IRMultiplicationInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRFloatSubtractionInstruction {}
 
-@extends IRValuedInstruction;
-IRFloatMultiplicationInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRMultiplicationInstruction {}
 
-@extends IRValuedInstruction;
-IRUnsignedDivisionInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRFloatMultiplicationInstruction {}
 
-@extends IRValuedInstruction;
-IRSignedDivisionInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRUnsignedDivisionInstruction {}
 
-@extends IRValuedInstruction;
-IRFloatDivisionInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRSignedDivisionInstruction {}
 
-@extends IRValuedInstruction;
-IRUnsignedModuloInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRFloatDivisionInstruction {}
 
-@extends IRValuedInstruction;
-IRSignedModuloInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRUnsignedModuloInstruction {}
 
-@extends IRValuedInstruction;
-IRFloatModuloInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRSignedModuloInstruction {}
 
-@extends IRValuedInstruction;
-IRLeftShiftInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRFloatModuloInstruction {}
 
-@extends IRValuedInstruction;
-IRUnsignedRightShiftInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRLeftShiftInstruction {}
 
-@extends IRValuedInstruction;
-IRSignedRightShiftInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRUnsignedRightShiftInstruction {}
 
-@extends IRValuedInstruction;
-IRANDInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRSignedRightShiftInstruction {}
 
-@extends IRValuedInstruction;
-IRORInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRANDInstruction {}
 
-@extends IRValuedInstruction;
-IRXORInstruction {
-    IRValue:v1,
-    IRValue:v2
-}
+@extends IRBinaryInstruction;
+IRORInstruction {}
+
+@extends IRBinaryInstruction;
+IRXORInstruction {}
 
 @extends IRValuedInstruction;
 IRExtractValueInstruction {
@@ -445,41 +410,41 @@ Str#[:IRValuedInstruction:instruction].stringify {
     given (instruction as IRFloatNegationInstruction:float_negation) {
         val = "fneg {} {}" % type_str % [float_negation.v].stringify;
     } given (instruction as IRAdditionInstruction:addition) {
-        val = "add {} {}, {}" % type_str % [addition.v1].stringify % [addition.v2].stringify;
+        val = stringify binary [addition] name: ["add"] type_str: [type_str];
     } given (instruction as IRFloatAdditionInstruction:float_addition) {
-        val = "fadd {} {}, {}" % type_str % [float_addition.v1].stringify % [float_addition.v2].stringify;
+        val = stringify binary [float_addition] name: ["fadd"] type_str: [type_str];
     } given (instruction as IRSubtractionInstruction:subtraction) {
-        val = "sub {} {}, {}" % type_str % [subtraction.v1].stringify % [subtraction.v2].stringify;
+        val = stringify binary [subtraction] name: ["sub"] type_str: [type_str];
     } given (instruction as IRFloatSubtractionInstruction:float_subtraction) {
-        val = "fsub {} {}, {}" % type_str % [float_subtraction.v1].stringify % [float_subtraction.v2].stringify;
+        val = stringify binary [float_subtraction] name: ["fsub"] type_str: [type_str];
     } given (instruction as IRMultiplicationInstruction:multiplication) {
-        val = "mul {} {}, {}" % type_str % [multiplication.v1].stringify % [multiplication.v2].stringify;
+        val = stringify binary [multiplication] name: ["mul"] type_str: [type_str];
     } given (instruction as IRFloatMultiplicationInstruction:float_multiplication) {
-        val = "fmul {} {}, {}" % type_str % [float_multiplication.v1].stringify % [float_multiplication.v2].stringify;
+        val = stringify binary [float_multiplication] name: ["fmul"] type_str: [type_str];
     } given (instruction as IRUnsignedDivisionInstruction:unsigned_division) {
-        val = "udiv {} {}, {}" % type_str % [unsigned_division.v1].stringify % [unsigned_division.v2].stringify;
+        val = stringify binary [unsigned_division] name: ["udiv"] type_str: [type_str];
     } given (instruction as IRSignedDivisionInstruction:signed_division) {
-        val = "sdiv {} {}, {}" % type_str % [signed_division.v1].stringify % [signed_division.v2].stringify;
+        val = stringify binary [signed_division] name: ["sdiv"] type_str: [type_str];
     } given (instruction as IRFloatDivisionInstruction:float_division) {
-        val = "fdiv {} {}, {}" % type_str % [float_division.v1].stringify % [float_division.v2].stringify;
+        val = stringify binary [float_division] name: ["fdiv"] type_str: [type_str];
     } given (instruction as IRUnsignedModuloInstruction:unsigned_modulo) {
-        val = "urem {} {}, {}" % type_str % [unsigned_modulo.v1].stringify % [unsigned_modulo.v2].stringify;
+        val = stringify binary [unsigned_modulo] name: ["urem"] type_str: [type_str];
     } given (instruction as IRSignedModuloInstruction:signed_modulo) {
-        val = "srem {} {}, {}" % type_str % [signed_modulo.v1].stringify % [signed_modulo.v2].stringify;
+        val = stringify binary [signed_modulo] name: ["srem"] type_str: [type_str];
     } given (instruction as IRFloatModuloInstruction:float_modulo) {
-        val = "frem {} {}, {}" % type_str % [float_modulo.v1].stringify % [float_modulo.v2].stringify;
+        val = stringify binary [float_modulo] name: ["frem"] type_str: [type_str];
     } given (instruction as IRLeftShiftInstruction:left_shift) {
-        val = "shl {} {}, {}" % type_str % [left_shift.v1].stringify % [left_shift.v2].stringify;
+        val = stringify binary [left_shift] name: ["shl"] type_str: [type_str];
     } given (instruction as IRUnsignedRightShiftInstruction:unsigned_right_shift) {
-        val = "lshr {} {}, {}" % type_str % [unsigned_right_shift.v1].stringify % [unsigned_right_shift.v2].stringify;
+        val = stringify binary [unsigned_right_shift] name: ["lshr"] type_str: [type_str];
     } given (instruction as IRSignedRightShiftInstruction:signed_right_shift) {
-        val = "ashr {} {}, {}" % type_str % [signed_right_shift.v1].stringify % [signed_right_shift.v2].stringify;
+        val = stringify binary [signed_right_shift] name: ["ashr"] type_str: [type_str];
     } given (instruction as IRANDInstruction:AND) {
-        val = "and {} {}, {}" % type_str % [AND.v1].stringify % [AND.v2].stringify;
+        val = stringify binary [AND] name: ["and"] type_str: [type_str];
     } given (instruction as IRORInstruction:OR) {
-        val = "or {} {}, {}" % type_str % [OR.v1].stringify % [OR.v2].stringify;
+        val = stringify binary [OR] name: ["or"] type_str: [type_str];
     } given (instruction as IRXORInstruction:XOR) {
-        val = "xor {} {}, {}" % type_str % [XOR.v1].stringify % [XOR.v2].stringify;
+        val = stringify binary [XOR] name: ["xor"] type_str: [type_str];
     } given (instruction as IRExtractValueInstruction:extract_value) {
         Str:txt = "extractvalue {} {}" % [[extract_value.aggregate].type].stringify % [extract_value.aggregate].stringify;
         for (W:index in extract_value.indices) {
@@ -624,9 +589,7 @@ IRInstruction {}
 
 @id stringify_instruction;
 Str#[:IRInstruction:instruction].stringify {
-    println["instruction stringify {}" % instruction];
     given (instruction as :IRValuedInstruction:valued) {
-        println["{} is a valued type?" % instruction];
         return [valued].stringify;
     } given (instruction as IRRetVoidInstruction:ret_void) {
         return "ret void";
