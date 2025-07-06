@@ -682,14 +682,22 @@ Str#[IRFuncBody:func_body].stringify {
     return " {\n{}}" % blocks_stringified;
 }
 
-IRArgument {
+@super;
+IRBaseParameter {
     IRType:type,
     [Str]:attrs,
+}
+
+@extends IRBaseParameter;
+IRArgument {
     Str?:name
 }
 
+@extends IRBaseParameter;
+IRReturnType {}
+
 IRFunc {
-    IRType:ret_type,
+    IRReturnType:ret,
     Str:specifiers,
     Str:name,
     [IRArgument]:args,
@@ -705,7 +713,6 @@ Str#[IRFunc:func].stringify {
             [stringified_args].extend[", "];
         };
         IRArgument:arg = func.args[i];
-        // [stringified_args].extend["{} {}" % [arg.type].stringify % [arg].stringify];
         [stringified_args].extend[[arg.type].stringify];
         for (Str:attr in arg.attrs) {
             [stringified_args].append[' '];
@@ -724,7 +731,13 @@ Str#[IRFunc:func].stringify {
         statement = "define";
     };
     statement = [statement] + [func.specifiers];
-    Str:result = "{} {} @{}({})" % statement % [func.ret_type].stringify
+    Str:stringified_ret = [""].clone;
+    for (Str:attr in func.ret.attrs) {
+        [stringified_ret].extend[attr];
+        [stringified_ret].append[' '];
+    };
+    [stringified_ret].extend[[func.ret.type].stringify];
+    Str:result = "{} {} @{}({})" % statement % stringified_ret
         % [func.name].quote_if_required % stringified_args;
     for (Str:fn_attr in func.fn_attrs) {
         [result].append[' '];
