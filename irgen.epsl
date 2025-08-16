@@ -403,7 +403,6 @@ IRValuedInstruction {
     IRRegister:register
 }
 
-@id stringify_valued;
 Str#[:IRValuedInstruction:instruction].stringify {
     Str?:val = null;
     Str:type_str = [instruction.register.type].stringify;
@@ -587,7 +586,6 @@ IRCallVoidInstruction {
 @super;
 IRInstruction {}
 
-@id stringify_instruction;
 Str#[:IRInstruction:instruction].stringify {
     given (instruction as :IRValuedInstruction:valued) {
         return [valued].stringify;
