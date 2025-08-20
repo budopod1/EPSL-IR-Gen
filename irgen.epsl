@@ -21,7 +21,7 @@ IRIntConstant {
 }
 
 IRFloatConstant {
-    Q:val
+    R:val
 }
 
 IRStructConstant {
@@ -66,16 +66,16 @@ Str#[IRConstant:const].stringify {
     given (const.int as IRIntConstant:int) {
         return [int.val].stringify;
     } given (const.float as IRFloatConstant:float) {
-        Q:val = float.val;
+        R:val = float.val;
         W:bits = (W)[const.type.float].unwrap.bits;
         if (bits == 16) {
-            val = (Q16)val;
+            val = (R16)val;
         } elif (bits == 32) {
-            val = (Q32)val;
+            val = (R32)val;
         } elif (bits == 64) {
-            val = (Q64)val;
+            val = (R64)val;
         } elif (bits == 128) {
-            // val = (Q128)val;
+            // val = (R128)val;
             abort "128 float constants not yet supported";
         } else {
             abort "{} is an invalid number of bits for a float constant" % bits;
@@ -89,7 +89,7 @@ Str#[IRConstant:const].stringify {
             bytes = [val].pack;
         } elif (bits == 128) {
             // result_start = "0xL";
-            // bytes = [(Q128)val].pack;
+            // bytes = [(R128)val].pack;
             abort "128 bit float constants are not yet supported";
         } else {
             abort "{} is an invalid number of bits for a float constant" % bits;
