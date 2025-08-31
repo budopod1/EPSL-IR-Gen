@@ -887,12 +887,12 @@ IRType {
 }
 
 Str#[IRType:type].stringify {
-    if (![type.ptr].is_null) {
+    given (type.ptr as IRPtrType:ptr) {
         return "ptr";
-    } elif (![type.int].is_null) {
-        return "i{}" % [type.int].unwrap.bits;
-    } elif (![type.float].is_null) {
-        W:bits = [type.float].unwrap.bits;
+    } given (type.int as IRIntType:int) {
+        return "i{}" % int.bits;
+    } given (type.float as IRFloatType:float) {
+        W:bits = float.bits;
         switch (bits)
         (16) {
             return "half";
@@ -909,15 +909,14 @@ Str#[IRType:type].stringify {
         {
             abort "{} is not a valid number of bits for a float" % bits;
         };
-    } elif (![type.void].is_null) {
+    } given (type.void as IRVoidType:void) {
         return "void";
-    } elif (![type.array].is_null) {
-        IRArrayType:arr = [type.array].unwrap;
+    } given (type.array as IRArrayType:arr) {
         return "[{} x {}]" % arr.elem_count % [arr.elem_type].stringify;
-    } elif (![type.literal_struct].is_null) {
-        return [[type.literal_struct].unwrap].stringify;
-    } elif (![type.identified_struct].is_null) {
-        return ["%"] + [[[type.identified_struct].unwrap.name].quote_if_required];
+    } given (type.literal_struct as IRStructType:literal_struct) {
+        return [literal_struct].stringify;
+    } given (type.identified_struct as IRIdentifiedStructType:identified_struct) {
+        return ["%"] + [[identified_struct.name].quote_if_required];
     } else {
         abort "Invalid IR type";
     };
