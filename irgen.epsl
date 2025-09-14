@@ -1,4 +1,4 @@
-$import conversion;
+%import conversion;
 
 IRStructDef {
     Str:name,
@@ -196,7 +196,7 @@ Str#[IRBaseCallInstruction:call].stringify with ret [Str:ret] {
     return "call {} {}({})" % sig % [call.register].stringify % arg_txt;
 }
 
-Str#stringify binary [%IRBinaryInstruction:instr] name: [Str:name] type_str: [Str:type_str] {
+Str#stringify binary [$IRBinaryInstruction:instr] name: [Str:name] type_str: [Str:type_str] {
     Str:flags_str = [""].clone;
     for (Str:flag in instr.flags) {
         [flags_str].append[' '];
@@ -403,7 +403,7 @@ IRValuedInstruction {
     IRRegister:register
 }
 
-Str#[%IRValuedInstruction:instruction].stringify {
+Str#[$IRValuedInstruction:instruction].stringify {
     Str?:val = null;
     Str:type_str = [instruction.register.type].stringify;
     given (instruction as IRFloatNegationInstruction:float_negation) {
@@ -586,8 +586,8 @@ IRCallVoidInstruction {
 @super;
 IRInstruction {}
 
-Str#[%IRInstruction:instruction].stringify {
-    given (instruction as %IRValuedInstruction:valued) {
+Str#[$IRInstruction:instruction].stringify {
+    given (instruction as $IRValuedInstruction:valued) {
         return [valued].stringify;
     } given (instruction as IRRetVoidInstruction:ret_void) {
         return "ret void";
@@ -652,13 +652,13 @@ Str#[IRValue:val].stringify {
 
 IRBasicBlock {
     W:id,
-    [%IRInstruction]:instructions,
+    [$IRInstruction]:instructions,
     Bool:is_terminated
 }
 
 Str#[IRBasicBlock:basic_block].stringify {
     Str:result = "b{}:\n" % basic_block.id;
-    for (%IRInstruction:instruction in basic_block.instructions) {
+    for ($IRInstruction:instruction in basic_block.instructions) {
         [result].extend["  "];
         [result].extend[[instruction].stringify];
         [result].append['\n'];
