@@ -76,9 +76,9 @@ Str#[IRConstant:const].stringify {
             val = (R64)val;
         } elif (bits == 128) {
             // val = (R128)val;
-            abort "128 float constants not yet supported";
+            abort ["128 float constants not yet supported"];
         } else {
-            abort "{} is an invalid number of bits for a float constant" % bits;
+            abort ["{} is an invalid number of bits for a float constant" % bits];
         };
 
         Str:result_start = "";
@@ -90,9 +90,9 @@ Str#[IRConstant:const].stringify {
         } elif (bits == 128) {
             // result_start = "0xL";
             // bytes = [(R128)val].pack;
-            abort "128 bit float constants are not yet supported";
+            abort ["128 bit float constants are not yet supported"];
         } else {
-            abort "{} is an invalid number of bits for a float constant" % bits;
+            abort ["{} is an invalid number of bits for a float constant" % bits];
         };
 
         return [result_start] + [bytes_to_hex[bytes]];
@@ -129,7 +129,7 @@ Str#[IRConstant:const].stringify {
     } given (const.poison as IRPoisonConstant:poison) {
         return "poison";
     } else {
-        abort "Invalid IR constant";
+        abort ["Invalid IR constant"];
     };
 }
 
@@ -506,21 +506,21 @@ Str#[$IRValuedInstruction:instruction].stringify {
         Str:v1_type_str = [[int_compare.v1].type].stringify;
         Str:v2_type_str = [[int_compare.v2].type].stringify;
         if (![v1_type_str] equals [v2_type_str]) {
-            abort "Both operands of a comparison instruction must have the same IR type (found types {} and {})" % v1_type_str % v2_type_str;
+            abort ["Both operands of a comparison instruction must have the same IR type (found types {} and {})" % v1_type_str % v2_type_str];
         };
         val = "icmp {} {} {}, {}" % int_compare.comp % v1_type_str % [int_compare.v1].stringify % [int_compare.v2].stringify;
     } given (instruction as IRFloatCompareInstruction:float_compare) {
         Str:v1_type_str = [[float_compare.v1].type].stringify;
         Str:v2_type_str = [[float_compare.v2].type].stringify;
         if (![v1_type_str] equals [v2_type_str]) {
-            abort "Both operands of a comparison instruction must have the same IR type (found types {} and {})" % v1_type_str % v2_type_str;
+            abort ["Both operands of a comparison instruction must have the same IR type (found types {} and {})" % v1_type_str % v2_type_str];
         };
         val = "fcmp {} {} {}, {}" % float_compare.comp % v1_type_str % [float_compare.v1].stringify % [float_compare.v2].stringify;
     } given (instruction as IRPHIInstruction:PHI) {
         Str:txt = ["phi "] + [type_str];
 
         if ([PHI.vals].len != [PHI.block_ids].len) {
-            abort "The PHI values and blocks must match in number one to one";
+            abort ["The PHI values and blocks must match in number one to one"];
         };
 
         for (W:i enumerating PHI.vals) {
@@ -536,7 +536,7 @@ Str#[$IRValuedInstruction:instruction].stringify {
     } given (instruction as IRCallInstruction:call) {
         val = [call.call].stringify with ret [type_str];
     } else {
-        abort "Invalid IRValuedInstruction {}" % instruction;
+        abort ["Invalid IRValuedInstruction {}" % instruction];
     };
     return "{} = {}" % [instruction.register].stringify % [val].unwrap;
 }
@@ -600,7 +600,7 @@ Str#[$IRInstruction:instruction].stringify {
     } given (instruction as IRSwitchInstruction:switch_) {
 
         if ([switch_.targets].len != [switch_.branch_ids].len) {
-            abort "The number of switch target values ({}) does not match the number of switch non-default branches ({})" % [switch_.targets].len % [switch_.branch_ids].len;
+            abort ["The number of switch target values ({}) does not match the number of switch non-default branches ({})" % [switch_.targets].len % [switch_.branch_ids].len];
         };
 
         Str:table_body = [""].clone;
@@ -621,7 +621,7 @@ Str#[$IRInstruction:instruction].stringify {
     } given (instruction as IRCallVoidInstruction:void_call) {
         return [void_call.call].stringify with ret ["void"];
     } else {
-        abort "Invalid IRInstruction";
+        abort ["Invalid IRInstruction"];
     };
 }
 
@@ -636,7 +636,7 @@ IRType#[IRValue:val].type {
     } elif (val.constant) {
         return [val.constant].unwrap.type;
     } else {
-        abort "Invalid IRValue";
+        abort ["Invalid IRValue"];
     };
 }
 
@@ -646,7 +646,7 @@ Str#[IRValue:val].stringify {
     } elif (val.constant) {
         return [[val.constant].unwrap].stringify;
     } else {
-        abort "Invalid IRValue";
+        abort ["Invalid IRValue"];
     };
 }
 
@@ -907,7 +907,7 @@ Str#[IRType:type].stringify {
             return "fp128";
         }
         {
-            abort "{} is not a valid number of bits for a float" % bits;
+            abort ["{} is not a valid number of bits for a float" % bits];
         };
     } given (type.void as IRVoidType:void) {
         return "void";
@@ -918,6 +918,6 @@ Str#[IRType:type].stringify {
     } given (type.identified_struct as IRIdentifiedStructType:identified_struct) {
         return ["%"] + [[identified_struct.name].quote_if_required];
     } else {
-        abort "Invalid IR type";
+        abort ["Invalid IR type"];
     };
 }
