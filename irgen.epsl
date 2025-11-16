@@ -16,40 +16,41 @@ Str#[IRStructDef:struct_def].stringify {
     };
 }
 
+@super;
+IRConstant {
+    $IRType:type
+}
+
+@extends IRConstant;
 IRIntConstant {
     L:val
 }
 
+@extends IRConstant;
 IRFloatConstant {
     R:val
 }
 
+@extends IRConstant;
 IRStructConstant {
-    [IRConstant]:elements
+    [$IRConstant]:elements
 }
 
+@extends IRConstant;
 IRArrayConstant {
-    [IRConstant]:elements
+    [$IRConstant]:elements
 }
 
+@extends IRConstant;
 IRGlobalPtrConstant {
     IRRegister:register
 }
 
+@extends IRConstant;
 IRNullConstant {}
 
+@extends IRConstant;
 IRPoisonConstant {}
-
-IRConstant {
-    $IRType:type,
-    IRIntConstant?:int,
-    IRFloatConstant?:float,
-    IRStructConstant?:struct_,
-    IRArrayConstant?:array,
-    IRGlobalPtrConstant?:global_ptr,
-    IRNullConstant?:null_,
-    IRPoisonConstant?:poison
-}
 
 Str#bytes_to_hex[[Byte]:bytes] {
     Str:hex_nibbles = "0123456789ABCDEF";
@@ -62,10 +63,10 @@ Str#bytes_to_hex[[Byte]:bytes] {
     return result;
 }
 
-Str#[IRConstant:const].stringify {
-    given (const.int as IRIntConstant:int) {
+Str#[$IRConstant:const].stringify {
+    given (const as IRIntConstant:int) {
         return [int.val].stringify;
-    } given (const.float as IRFloatConstant:float) {
+    } given (const as IRFloatConstant:float) {
         R:val = float.val;
         W:bits = (W)[(IRFloatType?)const.type].unwrap.bits;
         if (bits == 16) {
@@ -96,37 +97,37 @@ Str#[IRConstant:const].stringify {
         };
 
         return [result_start] + [bytes_to_hex[bytes]];
-    } given (const.struct_ as IRStructConstant:struct_) {
+    } given (const as IRStructConstant:struct_) {
         Str:result = [""].clone;
         for (L:i enumerating struct_.elements) {
             if (i > 0) {
                 [result].append[','];
             };
             [result].append[' '];
-            IRConstant:element = struct_.elements[i];
+            $IRConstant:element = struct_.elements[i];
             [result].extend[[element.type].stringify];
             [result].append[' '];
             [result].extend[[element].stringify];
         };
         return "{{} }" % result;
-    } given (const.array as IRArrayConstant:array) {
+    } given (const as IRArrayConstant:array) {
         Str:result = [""].clone;
         for (L:i enumerating array.elements) {
             if (i > 0) {
                 [result].append[','];
             };
             [result].append[' '];
-            IRConstant:element = array.elements[i];
+            $IRConstant:element = array.elements[i];
             [result].extend[[element.type].stringify];
             [result].append[' '];
             [result].extend[[element].stringify];
         };
         return "[{} ]" % result;
-    } given (const.global_ptr as IRGlobalPtrConstant:global_ptr) {
+    } given (const as IRGlobalPtrConstant:global_ptr) {
         return [global_ptr.register].stringify;
-    } given (const.null_ as IRNullConstant:null_) {
+    } given (const as IRNullConstant:null_) {
         return "null";
-    } given (const.poison as IRPoisonConstant:poison) {
+    } given (const as IRPoisonConstant:poison) {
         return "poison";
     } else {
         abort ["Invalid IR constant"];
@@ -565,7 +566,7 @@ IRUnconditionalBranchInstruction {
 IRSwitchInstruction {
     IRValue:switch_on,
     W:branch_id_default,
-    [IRConstant]:targets,
+    [$IRConstant]:targets,
     [W]:branch_ids
 }
 
@@ -606,7 +607,7 @@ Str#[$IRInstruction:instruction].stringify {
         Str:table_body = [""].clone;
 
         for (W:i enumerating switch_.targets) {
-            IRConstant:const = switch_.targets[i];
+            $IRConstant:const = switch_.targets[i];
             if (table_body) {
                 [table_body].append[' '];
             };
@@ -627,7 +628,7 @@ Str#[$IRInstruction:instruction].stringify {
 
 IRValue {
     IRRegister?:register,
-    IRConstant?:constant
+    $IRConstant?:constant
 }
 
 $IRType#[IRValue:val].type {
@@ -754,7 +755,7 @@ IRGlobal {
     Bool:named_addr,
     Bool:is_const,
     $IRType:type,
-    IRConstant?:basic_init,
+    $IRConstant?:basic_init,
     Str?:str_init
 }
 
