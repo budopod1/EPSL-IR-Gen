@@ -41,7 +41,7 @@ IRNullConstant {}
 IRPoisonConstant {}
 
 IRConstant {
-    IRType:type,
+    $IRType:type,
     IRIntConstant?:int,
     IRFloatConstant?:float,
     IRStructConstant?:struct_,
@@ -67,7 +67,7 @@ Str#[IRConstant:const].stringify {
         return [int.val].stringify;
     } given (const.float as IRFloatConstant:float) {
         R:val = float.val;
-        W:bits = (W)[const.type.float].unwrap.bits;
+        W:bits = (W)[(IRFloatType?)const.type].unwrap.bits;
         if (bits == 16) {
             val = (R16)val;
         } elif (bits == 32) {
@@ -136,7 +136,7 @@ Str#[IRConstant:const].stringify {
 IRRegister {
     Bool:is_global,
     Str:name,
-    IRType:type
+    $IRType:type
 }
 
 Str#[Str:str].quote_if_required {
@@ -289,12 +289,12 @@ IRInsertValueInstruction {
 
 @extends IRValuedInstruction;
 IRAllocaInstruction {
-    IRType:type
+    $IRType:type
 }
 
 @extends IRValuedInstruction;
 IRAllocaMultipleInstruction {
-    IRType:type,
+    $IRType:type,
     IRValue:count
 }
 
@@ -305,7 +305,7 @@ IRLoadInstruction {
 
 @extends IRValuedInstruction;
 IRGEPInstruction {
-    IRType:base_type,
+    $IRType:base_type,
     IRValue:ptr,
     [IRValue]:indices
 }
@@ -630,7 +630,7 @@ IRValue {
     IRConstant?:constant
 }
 
-IRType#[IRValue:val].type {
+$IRType#[IRValue:val].type {
     if (val.register) {
         return [val.register].unwrap.type;
     } elif (val.constant) {
@@ -682,7 +682,7 @@ Str#[IRFuncBody:func_body].stringify {
 
 @super;
 IRBaseParameter {
-    IRType:type,
+    $IRType:type,
     [Str]:attrs,
 }
 
@@ -753,7 +753,7 @@ IRGlobal {
     Str?:linkage,
     Bool:named_addr,
     Bool:is_const,
-    IRType:type,
+    $IRType:type,
     IRConstant?:basic_init,
     Str?:str_init
 }
@@ -840,25 +840,34 @@ source_filename = \"{}\"
         % globals_stringified % struct_defs_stringified % funcs_stringified;
 }
 
+@super;
+IRType {}
+
+@extends IRType;
 IRPtrType {}
 
+@extends IRType;
 IRIntType {
     W:bits
 }
 
+@extends IRType;
 IRFloatType {
     W:bits // acceptable values are 16, 32, 64, and 128
 }
 
+@extends IRType;
 IRVoidType {}
 
+@extends IRType;
 IRArrayType {
     L:elem_count,
-    IRType:elem_type
+    $IRType:elem_type
 }
 
+@extends IRType;
 IRStructType {
-    [IRType]:members
+    [$IRType]:members
 }
 
 Str#[IRStructType:struct_type].stringify {
@@ -872,26 +881,17 @@ Str#[IRStructType:struct_type].stringify {
     return "{{}}" % inner;
 }
 
+@extends IRType;
 IRIdentifiedStructType {
     Str:name
 }
 
-IRType {
-    IRPtrType?:ptr,
-    IRIntType?:int,
-    IRFloatType?:float,
-    IRVoidType?:void,
-    IRArrayType?:array,
-    IRStructType?:literal_struct,
-    IRIdentifiedStructType?:identified_struct,
-}
-
-Str#[IRType:type].stringify {
-    given (type.ptr as IRPtrType:ptr) {
+Str#[$IRType:type].stringify {
+    given (type as IRPtrType:ptr) {
         return "ptr";
-    } given (type.int as IRIntType:int) {
+    } given (type as IRIntType:int) {
         return "i{}" % int.bits;
-    } given (type.float as IRFloatType:float) {
+    } given (type as IRFloatType:float) {
         W:bits = float.bits;
         switch (bits)
         (16) {
@@ -909,13 +909,13 @@ Str#[IRType:type].stringify {
         {
             abort ["{} is not a valid number of bits for a float" % bits];
         };
-    } given (type.void as IRVoidType:void) {
+    } given (type as IRVoidType:void) {
         return "void";
-    } given (type.array as IRArrayType:arr) {
+    } given (type as IRArrayType:arr) {
         return "[{} x {}]" % arr.elem_count % [arr.elem_type].stringify;
-    } given (type.literal_struct as IRStructType:literal_struct) {
+    } given (type as IRStructType:literal_struct) {
         return [literal_struct].stringify;
-    } given (type.identified_struct as IRIdentifiedStructType:identified_struct) {
+    } given (type as IRIdentifiedStructType:identified_struct) {
         return ["%"] + [[identified_struct.name].quote_if_required];
     } else {
         abort ["Invalid IR type"];
