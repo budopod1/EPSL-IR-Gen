@@ -68,16 +68,16 @@ Str#[$IRConstant:const].stringify {
         return [int.val].stringify;
     } given (const as IRFloatConstant:float) {
         R:val = float.val;
-        W:bits = (W)[(IRFloatType?)const.type].unwrap.bits;
+        W:bits = [const.type#IRFloatType?].unwrap.bits#W;
         if (bits == 16) {
-            val = (R16)val;
+            val = val#R16;
         } elif (bits == 32) {
-            val = (R32)val;
+            val = val#R32;
         } elif (bits == 64) {
-            val = (R64)val;
+            val = val#R64;
         } elif (bits == 128) {
             // val = (R128)val;
-            abort ["128 float constants not yet supported"];
+            abort ["128 bit float constants not yet supported"];
         } else {
             abort ["{} is an invalid number of bits for a float constant" % bits];
         };
