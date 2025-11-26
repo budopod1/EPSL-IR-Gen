@@ -57,8 +57,9 @@ Str#bytes_to_hex[[Byte]:bytes] {
     Str:result = Str*([bytes].len * 2);
     L:i = [result].len - 1;
     for (Byte:byte in bytes step -1) {
-        result[i--] = hex_nibbles[byte % 16];
-        result[i--] = hex_nibbles[byte ~/ 16];
+        result[i] = hex_nibbles[byte % 16];
+        result[i - 1] = hex_nibbles[byte ~/ 16];
+        i -= 2;
     };
     return result;
 }
